@@ -1,0 +1,90 @@
+----------------DNS--------------
+apt install bind9 dnsutils -y
+nano /etc/bind
+
+cp db.127 db.192
+cp db.local db.domain
+
+nano named.conf.local
+zone "dimas.com" {
+        type master;
+        file "/etc/bind/db.domain";
+};
+
+zone "10.168.192.in-addr.arpa" {
+        type master;
+        file "/etc/bind/db.192";
+};
+
+db.192
+@       IN      NS      dimas.com.
+12      IN      PTR     dimas.com.
+
+db.domain
+@       IN      NS      dimas.com.
+@       IN      A       192.168.10.12
+www     IN      A       192.168.10.12
+
+kunci file
+chattr +i /etc/resolv.conf
+
+
+
+------------------------Ftp----------------
+
+apt install ptoftpd -y
+
+nano /etc/proftpd/proftpd.conf
+Port 21
+<Anonymous home>
+   User dimas
+
+
+------------------------dhcp----------
+
+apt install isc-dhcp-server
+
+nano /etc/default/isc-dhcp-server
+INTERFACESv4=""
+
+nano /etc/dhcp/dhcpd.conf
+subnet 192.168.10.0 netmask 255.255.255.0 {
+  range 192.168.10.13 192.168.10.19;
+  option domain-name-servers 192.168.10.12;
+  option domain-name "dimas.com";
+  option routers 192.168.10.1;
+  option broadcast-address 192.168.10.255;
+  default-lease-time 600;
+  max-lease-time 7200;
+}
+
+
+--------------------web server-------------------
+
+apt install apache2
+
+nano /etc/apache2/sites-available/000-default.conf
+
+untuk on website
+a2ensite web1.conf
+
+
+-------------------------------samba---------------------------
+
+apt install samba -y
+cd /home/shared
+
+mkdir shared 
+chmod 777 shared
+
+
+# [Share]
+   comment = Share CA untuk Guru dan Siswa
+   path = /home/shared
+   browseable = yes
+   writable = yes
+   public = yes
+   guest ok = yes
+   force user = root
+   create mask = 0777
+   directory mask = 0777
