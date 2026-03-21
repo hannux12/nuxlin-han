@@ -1,0 +1,32 @@
+apt install mariadb-server -y
+
+systemctl start mariadb
+systemctl enable mariadb
+
+mysql_secure_installation
+answer the the question with Y OR N
+
+mysql -u root -p
+
+CREATE DATABASE maildb;
+CREATE USER 'mailuser'@'localhost' IDENTIFIED BY '12345';  
+
+give acces
+GRANT ALL PRIVILEGES ON maildb.* TO 'mailuser'@'localhost';
+FLUSH PRIVILEGES;
+
+EXIT;
+
+testting 
+mysql -u dimasdb -p
+
+USE dimasdb;
+
+create table
+CREATE TABLE usermail (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50),
+    password VARCHAR(50)
+);
+
+EXIT;
