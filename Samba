@@ -1,0 +1,17 @@
+apt install samba -y
+cd /home/shared
+
+mkdir shared 
+chmod 777 shared
+
+
+# [Share]
+   comment = Share file
+   path = /home/shared
+   browseable = yes
+   writable = yes
+   public = yes
+   guest ok = yes
+   force user = root
+   create mask = 0777
+   directory mask = 077
