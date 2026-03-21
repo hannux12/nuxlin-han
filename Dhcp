@@ -1,0 +1,15 @@
+apt install isc-dhcp-server
+
+nano /etc/default/isc-dhcp-server
+INTERFACESv4=""
+
+nano /etc/dhcp/dhcpd.conf
+subnet 192.168.10.0 netmask 255.255.255.0 {
+  range 192.168.10.13 192.168.10.19;
+  option domain-name-servers 192.168.10.12;
+  option domain-name "dimas.com";
+  option routers 192.168.10.1;
+  option broadcast-address 192.168.10.255;
+  default-lease-time 600;
+  max-lease-time 7200;
+}
