@@ -36,3 +36,15 @@ nano /etc/apache2/sites-available/000-default.conf
 untuk on website
 a2ensite web1.conf
 
+#agar bisa internet
+nano /etc/bind/named.conf.options
+
+         forwarders {
+                8.8.8.8;
+                1.1.1.1;
+         };
+
+dnssec-validation no;
+
+
+
