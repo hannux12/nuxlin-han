@@ -1,4 +1,4 @@
-----------------DNS--------------
+1.----------------DNS--------------
 apt install bind9 dnsutils -y
 nano /etc/bind
 
@@ -30,7 +30,7 @@ chattr +i /etc/resolv.conf
 
 
 
-------------------------Ftp----------------
+2.------------------------Ftp----------------
 
 apt install ptoftpd -y
 
@@ -40,7 +40,7 @@ Port 21
    User dimas
 
 
-------------------------dhcp----------
+3.------------------------dhcp----------
 
 apt install isc-dhcp-server
 
@@ -59,7 +59,7 @@ subnet 192.168.10.0 netmask 255.255.255.0 {
 }
 
 
---------------------web server-------------------
+4.--------------------web server-------------------
 
 apt install apache2
 
@@ -69,7 +69,7 @@ untuk on website
 a2ensite web1.conf
 
 
--------------------------------samba---------------------------
+5.-------------------------------samba---------------------------
 
 apt install samba -y
 cd /home/shared
@@ -79,7 +79,7 @@ chmod 777 shared
 
 
 # [Share]
-   comment = Share CA untuk Guru dan Siswa
+   comment = Share file
    path = /home/shared
    browseable = yes
    writable = yes
@@ -89,9 +89,14 @@ chmod 777 shared
    create mask = 0777
    directory mask = 0777
 
--------------------------Mail Server-----------
+6.-------------------------Mail Server-----------
 
 apt install postfix dovecot-imapd dovecot-pop3d
+dpkg-reconfigure postfix
+        Internet Site
+        dimas.com (your domain)
+        dimas (username)
+        mail.dimas.com, dimas.com, localhost, localhost.localdomain
 
 nano /etc/postfix/main.cf
 
@@ -100,7 +105,7 @@ mydomain = dimas.com
 myorigin = /etc/mailname
 inet_interfaces = all
 inet_protocols = all
-mydestination = $myhostname, dimas.com, localhost
+mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
 mynetworks = 127.0.0.0/8 192.168.10.0/24
 home_mailbox = Maildir/
 
@@ -125,4 +130,177 @@ mail budi@dimas.com
 
 cd ~/Maildir/new
 cat * 
+
+7.-----------------------Database---------------
+
+apt install mariadb-server -y
+
+systemctl start mariadb
+systemctl enable mariadb
+
+mysql_secure_installation
+answer the the question with Y OR N
+
+mysql -u root -p
+
+CREATE DATABASE maildb;
+CREATE USER 'mailuser'@'localhost' IDENTIFIED BY '12345';  
+
+give acces
+GRANT ALL PRIVILEGES ON maildb.* TO 'mailuser'@'localhost';
+FLUSH PRIVILEGES;
+
+EXIT;
+
+testting 
+mysql -u dimasdb -p
+
+USE dimasdb;
+
+create table
+CREATE TABLE usermail (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50),
+    password VARCHAR(50)
+);
+
+EXIT;
+
+8.----------certificate authority------------
+
+apt install openssl
+
+mkdir -p /etc/ca/
+#buat folder
+mkdir -p newcerts crl certs private
+chmod 700 private
+touch index.txt
+echo 1000 > srerial
+
+cp /etc/ssl/openssl.conf /etc/ca
+
+#create private key
+openssl genrsa -out /root/ca/private/ca.key.pem 2048
+
+#buat certificate
+openssl req -x509 -new -nodes \
+-key /root/ca/private/ca.key.pem \
+-sha256 -days 3650 \
+-out /root/ca/certs/ca.cert.pem
+CommonName CA-DIMAS
+
+#config
+nano /etc/ssl/openssl.conf
+[ CA_default ]
+
+[ CA_default ]
+dir               = /root/ca
+certs             = $dir/certs
+new_certs_dir     = $dir/newcerts
+database          = $dir/index.txt
+serial            = $dir/serial
+private_key       = $dir/private/ca.key.pem
+certificate       = $dir/certs/ca.cert.pem
+default_md        = sha256
+policy            = policy_loose
+
+[ policy_loose ]
+commonName              = supplied
+#certificate untuk domain
+
+#key untuk domain
+openssl genrsa -out rehan.com.key 2048
+#csr domain
+openssl req -new -key rehan.com.key -out rehan.com.csr
+
+Country ID
+CommonName rehan.com(domain name)
+
+#daftarkan ca
+openssl ca -config /root/ca/openssl.cnf \
+-in rehan.com.csr \
+-out rehan.com.crt
+
+#test ca
+openssl x509 -in rehan.com.crt -text -noout
+
+#KE Web Server
+#coppy file
+mkdir -p /etc/apache2/ssl
+cp mail.rehan.com.crt /etc/apache2/ssl/
+cp mail.rehan.com.key /etc/apache2/ssl/
+cp /etc/ca/ca.cert.pem /etc/apache2/ssl/
+#aktifkan ssl
+a2enmod ssl
+
+nano /etc/apache2/sites-available/ssl
+atau
+nano /etc/apache2/sites-available/ssl.conf (buat baru)
+<VirtualHost *:443>
+    ServerName rehan.com
+    ServerAlias www.rehan.com
+
+    DocumentRoot /var/www/html
+
+    SSLEngine on
+    SSLCertificateFile /etc/apache2/ssl/wildcard.crt
+    SSLCertificateKeyFile /etc/apache2/ssl/wildcard.key
+    SSLCACertificateFile /etc/apache2/ssl/ca.cert.pem
+</VirtualHost>
+
+#aktifkan site
+a2ensite 
+systemctl restart apache2
+
+
+
+9.-----------------------NTP----------
+#SERVER
+apt install ntpsec -y
+
+date -s "2026-03-19 06:09:00"
+
+#config
+nano /etc/ntpsec/ntp.conf
+driftfile /var/lib/ntpsec/ntp.drift
+
+#tos minclock 4 minsane 3(comment ini)
+(cooment semua pool bawaan)
+server 127.127.1.0
+fudge 127.127.1.0 stratum 1
+restrict 192.168.30.0 mask 255.255.255.0 nomodify notrap
+
+restrict default kod nomodify nopeer noquery limited
+
+restrict 127.0.0.1
+restrict ::1
+#untuk liat status ntp
+ntpq -p
+
+#CLIENT
+nano /etc/ntpsec/ntp.conf
+driftfile /var/lib/ntpsec/ntp.drift
+
+server 192.168.30.23 iburst
+fudge 127.127.1.0 stratum 1
+restrict 192.168.30.0 mask 255.255.255.0 nomodify notrap
+
+systemctl resatart ntpsec
+#untuk lihat status ntp
+ntpq -p
+
+------------------------SSH--------------
+
+
+apt install openssh-server
+
+nano /etc/ssh/sshd_config
+Port 2222
+PermitRootLogin yes
+PasswordAuthentication yes
+
+systemctl start ssh
+systemctl emable ssh
+systemctl restart ssh
+
 
