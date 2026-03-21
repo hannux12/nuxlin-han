@@ -1,0 +1,33 @@
+#SERVER
+apt install ntpsec -y
+
+date -s "2026-03-19 06:09:00"
+
+#config
+nano /etc/ntpsec/ntp.conf
+driftfile /var/lib/ntpsec/ntp.drift
+
+#tos minclock 4 minsane 3(comment ini)
+(cooment semua pool bawaan)
+server 127.127.1.0
+fudge 127.127.1.0 stratum 1
+restrict 192.168.30.0 mask 255.255.255.0 nomodify notrap
+
+restrict default kod nomodify nopeer noquery limited
+
+restrict 127.0.0.1
+restrict ::1
+#untuk liat status ntp
+ntpq -p
+
+#CLIENT
+nano /etc/ntpsec/ntp.conf
+driftfile /var/lib/ntpsec/ntp.drift
+
+server 192.168.30.23 iburst
+fudge 127.127.1.0 stratum 1
+restrict 192.168.30.0 mask 255.255.255.0 nomodify notrap
+
+systemctl resatart ntpsec
+#untuk lihat status ntp
+ntpq -p
