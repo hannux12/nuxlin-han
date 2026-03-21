@@ -1,0 +1,83 @@
+apt install openssl
+
+mkdir -p /etc/ca/
+#buat folder
+mkdir -p newcerts crl certs private
+chmod 700 private
+touch index.txt
+echo 1000 > srerial
+
+cp /etc/ssl/openssl.conf /etc/ca
+
+#create private key
+openssl genrsa -out /root/ca/private/ca.key.pem 2048
+
+#buat certificate
+openssl req -x509 -new -nodes \
+-key /root/ca/private/ca.key.pem \
+-sha256 -days 3650 \
+-out /root/ca/certs/ca.cert.pem
+CommonName CA-DIMAS
+
+#config
+nano /etc/ssl/openssl.conf
+[ CA_default ]
+
+[ CA_default ]
+dir               = /root/ca
+certs             = $dir/certs
+new_certs_dir     = $dir/newcerts
+database          = $dir/index.txt
+serial            = $dir/serial
+private_key       = $dir/private/ca.key.pem
+certificate       = $dir/certs/ca.cert.pem
+default_md        = sha256
+policy            = policy_loose
+
+[ policy_loose ]
+commonName              = supplied
+#certificate untuk domain
+
+#key untuk domain
+openssl genrsa -out rehan.com.key 2048
+#csr domain
+openssl req -new -key rehan.com.key -out rehan.com.csr
+
+Country ID
+CommonName rehan.com(domain name)
+
+#daftarkan ca
+openssl ca -config /root/ca/openssl.cnf \
+-in rehan.com.csr \
+-out rehan.com.crt
+
+#test ca
+openssl x509 -in rehan.com.crt -text -noout
+
+#KE Web Server
+#coppy file
+mkdir -p /etc/apache2/ssl
+cp mail.rehan.com.crt /etc/apache2/ssl/
+cp mail.rehan.com.key /etc/apache2/ssl/
+cp /etc/ca/ca.cert.pem /etc/apache2/ssl/
+#aktifkan ssl
+a2enmod ssl
+
+nano /etc/apache2/sites-available/ssl
+atau
+nano /etc/apache2/sites-available/ssl.conf (buat baru)
+<VirtualHost *:443>
+    ServerName rehan.com
+    ServerAlias www.rehan.com
+
+    DocumentRoot /var/www/html
+
+    SSLEngine on
+    SSLCertificateFile /etc/apache2/ssl/wildcard.crt
+    SSLCertificateKeyFile /etc/apache2/ssl/wildcard.key
+    SSLCACertificateFile /etc/apache2/ssl/ca.cert.pem
+</VirtualHost>
+
+#aktifkan site
+a2ensite 
+systemctl restart apache2
