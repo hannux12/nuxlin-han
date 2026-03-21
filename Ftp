@@ -1,0 +1,6 @@
+apt install ptoftpd -y
+
+nano /etc/proftpd/proftpd.conf
+Port 21
+<Anonymous home>
+   User dimas
