@@ -26,3 +26,13 @@ www     IN      A       192.168.10.12
 
 kunci file
 chattr +i /etc/resolv.conf
+
+--------------------web server-------------------
+
+apt install apache2
+
+nano /etc/apache2/sites-available/000-default.conf
+
+untuk on website
+a2ensite web1.conf
+
