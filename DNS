@@ -1,0 +1,28 @@
+apt install bind9 dnsutils -y
+nano /etc/bind
+
+cp db.127 db.192
+cp db.local db.domain
+
+nano named.conf.local
+zone "dimas.com" {
+        type master;
+        file "/etc/bind/db.domain";
+};
+
+zone "10.168.192.in-addr.arpa" {
+        type master;
+        file "/etc/bind/db.192";
+};
+
+db.192
+@       IN      NS      dimas.com.
+12      IN      PTR     dimas.com.
+
+db.domain
+@       IN      NS      dimas.com.
+@       IN      A       192.168.10.12
+www     IN      A       192.168.10.12
+
+kunci file
+chattr +i /etc/resolv.conf
