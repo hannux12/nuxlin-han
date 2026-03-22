@@ -304,3 +304,19 @@ systemctl emable ssh
 systemctl restart ssh
 
 
+
+-------------------Routing--------
+#SERVER
+#IP FORWARD
+echo 1 > /proc/sys/net/ipv4/ip_forward
+#NAT
+iptables -t nat -A POSTROUTING -o ens33 -j MASQUERADE
+#FORWARD RULE
+iptables -A FORWARD -i ens37 -o ens33 -j ACCEPT
+iptables -A FORWARD -i ens33 -o ens37 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+#CLIENT
+ip a
+ip route
+cat /etc/resolv.conf
+IP HARUS SESUAI SERVER
