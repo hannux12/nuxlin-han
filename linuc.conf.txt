@@ -179,7 +179,7 @@ chmod 700 private
 touch index.txt
 echo 1000 > srerial
 
-cp /etc/ssl/openssl.conf /etc/ca
+cp /etc/ssl/openssl.cnf /etc/ca
 
 #create private key
 openssl genrsa -out /root/ca/private/ca.key.pem 2048
