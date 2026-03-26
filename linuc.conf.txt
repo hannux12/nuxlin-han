@@ -240,7 +240,7 @@ atau
 nano /etc/apache2/sites-available/ssl.conf (buat baru)
 <VirtualHost *:443>
     ServerName rehan.com
-    ServerAlias www.rehan.com
+    ServerAlias www.rehan.com mail.rehan.com
 
     DocumentRoot /var/www/html
 
@@ -249,6 +249,13 @@ nano /etc/apache2/sites-available/ssl.conf (buat baru)
     SSLCertificateKeyFile /etc/apache2/ssl/wildcard.key
     SSLCACertificateFile /etc/apache2/ssl/ca.cert.pem
 </VirtualHost>
+
+@       IN  NS  reva.com.
+@       IN  A   192.168.30.23
+www     IN  A   192.168.30.23
+mail    IN  A   192.168.30.23
+
+@       IN  MX  10 mail.reva.com.
 
 #aktifkan site
 a2ensite 
