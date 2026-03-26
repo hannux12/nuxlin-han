@@ -117,6 +117,8 @@ nano /etc/dovecot/conf.d/10-mail.conf
 
 systemctl restart postfix devecot
 
+apt install mailtutils -y
+
 su - dimas
 maildirmake.dovecot ~/Maildir
 
