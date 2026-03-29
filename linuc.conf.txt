@@ -329,3 +329,54 @@ ip a
 ip route
 cat /etc/resolv.conf
 IP HARUS SESUAI SERVER
+
+
+-----------------------proxyyy----------------
+apt installl squid -y
+
+nano /etc/squid/squid.conf
+#search http_access deny all
+http_access allow all
+#tambah
+acl localnet src [ip debian]
+#tambah
+auth_param basic program /usr/lib/squid/basic_ncsa_auth /etc/squid/passwords
+auth_param basic realm proxy
+acl authenticated proxy_auth REQUIRED
+http_access allow authenticated
+
+
+curl -v -x http://nama_user_squid:password_squid@ip_debian:3128 http://www.google.com/
+
+
+
+
+
+blocking
+
+acl katakunci url_regex "/etc/squid/block-keywords.txt"
+acl listdomain dstdomain "/etc/squid/block-website.txt"
+http_access deny katakunci
+http_access deny listdomain
+
+
+------------------firewall----------------
+
+iptables -F
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p icmp -j ACCEPT
+
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+iptables -A INPUT -p udp --dport 53 -j ACCEPT
+iptables -A INPUT -p tcp --dport 53 -j ACCEPT
+
+iptables -A INPUT -p udp --dport 123 -j ACCEPT
