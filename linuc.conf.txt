@@ -94,9 +94,8 @@ chmod 777 shared
 apt install postfix dovecot-imapd dovecot-pop3d
 dpkg-reconfigure postfix
         Internet Site
-        dimas.com (your domain)
-        dimas (username)
-        mail.dimas.com, dimas.com, localhost, localhost.localdomain
+        mail.dimas.com (your domain)
+
 
 nano /etc/postfix/main.cf
 
@@ -109,30 +108,84 @@ mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
 mynetworks = 127.0.0.0/8 192.168.10.0/24
 home_mailbox = Maildir/
 
+cd /etc/skel
+maildirmake.dovecot /etc/skel/Maildir
+
+dpkg-reconfigure postfix
+internet site
+mail.dimas.com
+ok
+debian, mail.dimas.com, debian, localhost.localdomain, lolcahost.
+yes
+ok
+ok
+ok
+ipv4
+
 nano /etc/dovecot/dovecot.conf
 listen = *, ::
+
+nano /etc/dovecot/conf.d/10-auth.conf
+disable_plaintext_auth = yes
 
 nano /etc/dovecot/conf.d/10-mail.conf
  mail_location = maildir:~/Maildir
 
+adduser ipin
+adduser ipin
+
+aptinstall telnet 
 systemctl restart postfix devecot
-
-apt install mailtutils -y
-
-su - dimas
-maildirmake.dovecot ~/Maildir
+telnet mail.dimas.com 25
 
 nano /etc/bind/db.domain
 
 mail    IN  A   192.168.10.12
-@       IN  MX  10 mail.dimas.com.
 
+apt install mariadb-serve roundcube -y
+yes
+password mysql bebas
 
-mail budi@dimas.com
+nano /etc/roundcube/config.inc.php
 
-cd ~/Maildir/new
-cat * 
+$config['imap_host'] = ["kaltaramaju.com:143"];
+$config['smtp_host'] = 'mail.kaltaramaju.com:25';
+$config['smtp_pass'] = '';
 
+dpkg-reconfigure roundcube-core
+kaltaramaju.com:143
+ok
+no
+apache2
+yes
+keep the local version currently installed
+
+nano /etc/apache2/apache2.conf
+Include /etc/roundcube/apache.conf
+
+cd /etc/apache2/sites-available/
+nano mail.conf
+
+<VirtualHost *:80>
+        ServerName mail.kaltaramaju.com
+        DocumentRoot /usr/share/roundcube
+</VirtualHost>
+
+a2dissite 000-default.conf
+a2ensite mail.conf
+systemctl restart apache2
+
+dpkg-reconfigure roundcube-core
+kaltaramaju.com:143
+ok
+yes
+unix
+default
+roundcube
+roundcube@localhost
+password bebas
+
+systemctl restart roundcube-gc
 7.-----------------------Database---------------
 
 apt install mariadb-server -y
