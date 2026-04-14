@@ -433,3 +433,44 @@ iptables -A INPUT -p udp --dport 53 -j ACCEPT
 iptables -A INPUT -p tcp --dport 53 -j ACCEPT
 
 iptables -A INPUT -p udp --dport 123 -j ACCEPT
+
+
+
+-----vpnn----
+apt install openvpn easy-rsa iptables -y
+
+
+cd /usr/share/easy-rsa/
+
+./easyrsa init-pki
+./easyrsa build-ca
+./easyrsa build-server-full server1 nopass
+passpheree bebas
+./easyrsa build-client-full client1 nopass
+
+./easyrsa gen-dh
+
+
+openvp --genkey secret ./pki/ta.key
+
+cp -pR /usr/share/easy-rsa/pki/{ca.crt,issued,private,dh.pem,ta.key} /etc/openvpn/server
+
+cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/server
+
+#server.conf
+port 1194
+proto udp
+dev tun
+ca ca.crt
+cert issued/server1.crt
+key private/server1.key
+dh dh.pem
+192.168.22.0 255.255.255.0
+push route 192.168.22.0 255.255.255.0
+push "dhcp-option DNS 192.168.79.1"
+push "dhcp-option DOMAIN kaltaraemas.com"
+
+scp ca.crt root@192.168.86.2:/home/dimas/openvpn
+scp ta.key root@192.168.86.2:/home/dimas/openvpn
+scp issued/client.crt root@192.168.86.2:/home/dimas/openvpn
+scp private/client.crt root@192.168.86.2:/home/dimas/openvpn
